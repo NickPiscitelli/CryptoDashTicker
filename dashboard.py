@@ -7,6 +7,12 @@ import re
 import locale
 import sys
 
+slideshow = None
+if len(sys.argv) > 2:
+	slideshow = sys.argv[2]
+if sys.argv[1] == 'slideshow':
+	slideshow = 1
+
 @route('/<coins>')
 def markets(coins):
 	markets = coins
@@ -100,6 +106,7 @@ def markets(coins):
 		if ltcmarket  or btcmarket:
 			avail = 1
 		coin_template += template('''
+{{!slidestart}}
 <div class="panel panel-{{color}} {{avail}}">
 	<div class="panel-heading">
 		<div class="panel-title">
@@ -160,6 +167,7 @@ def markets(coins):
 		</div>
 	</div>
 </div>
+{{!slideend}}
 		''',
 			avail= 'show' if avail else 'hide',
 			ltcmarket= 'show' if ltcmarket else 'hide',
@@ -185,8 +193,14 @@ def markets(coins):
 			swisscexltc_last_price=swiss[ltck]['last_price'],
 			mintpalbtc_last_price=mint[btck]['last_price'],
 			mintpalltc_last_price=mint[ltck]['last_price'],
+			slidestart='' if not slideshow else '''
+			<div class="item">
+			''',
+			slideend='' if not slideshow else '''
+			</div>
+			'''
 		)
-	tick = sys.argv[1].upper() or 'DOGE'
+	tick = sys.argv[1].upper() if sys.argv[1] != 'slideshow' else 'DOGE'
 	tick_color = 'green' if float(market_data['MintPal'][tick+'/BTC']['change']) > 0 else 'red'
 	invert = float(market_data['MintPal'][tick+'/BTC']['change'])
 	invert = invert * -1 if invert < 0 else invert
@@ -201,6 +215,7 @@ def markets(coins):
 		<link rel="shortcut icon" type="image/png" href="favicon32.ico">
 		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 	    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 		<style type="text/css">
 		body{
 			padding: 1em;
@@ -209,6 +224,7 @@ def markets(coins):
 		.panel-body{
 			padding: 1em;
 		}
+		
 		.panel.small{
 			font-size: .8em;
 		}
@@ -235,11 +251,11 @@ def markets(coins):
 		.coinmarket h3 {
 			font-size: 1.1em;
 			margin: .3em 0;
-			height: 18px;
+			height: 20px;
 			font-weight: bold;
 		}
 		.coinmarket h3:empty{
-			height: 18px;
+			height: 20px;
 		}
 		.coinmarket .end .s:after{
 			content: "SwissCEX";
@@ -261,12 +277,19 @@ def markets(coins):
 			cursor: pointer;
 			right: 0;
 		}
+		.carousel-control {
+			opacity: 0;
+		}
+		.carousel-control:hover{
+			opacity: .9;
+		}
 		.coinmarket .p{
 			display: block;
 		}
 		.coinmarket .p:empty{
 			display: none;
 		}
+		{{!largepanel}}
 		</style>
 		<script type="text/javascript">
 		var markets = {{!markets}};
@@ -282,6 +305,7 @@ def markets(coins):
 				}
 				window.open(url);
 			});
+			$('.carousel').find('.item').first().addClass('active')
 		});
 		/**
 		 * @license MIT
@@ -321,7 +345,9 @@ def markets(coins):
 			</div>
 		</div>
 	</div>
+	{{!slidestart}}
 	{{!coins}}
+	{{!slideend}}
 	</body>
 </html>
 	''',
@@ -329,7 +355,30 @@ def markets(coins):
 	coins=coin_template,
 	doge=str(tick_change)+'% - '+str(tick_last)+'S - '+tick+'/BTC',
 	change=tick_change,
-	bgcolor=tick_color
+	bgcolor=tick_color,
+	slideend='' if not slideshow else '''
+	   </div>
+		<a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+	    <span class="glyphicon glyphicon-chevron-left"></span>
+	  </a>
+	  <a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+	    <span class="glyphicon glyphicon-chevron-right"></span>
+	  </a>
+
+	</div>
+	''',
+	slidestart='' if not slideshow else '''
+	<div id="carousel-example-generic" data-interval="10000" class="carousel slide" data-ride="carousel">
+	  <ol class="carousel-indicators">
+	    <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+	    <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+	    <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+	  </ol>
+	  <div class="carousel-inner">
+	''',
+	largepanel='' if not slideshow else '''
+	.panel { font-size: 3em} .panel-title { font-size: 1.3em} .coinmarket h3,.coinmarket h3:empty { margin: .3em 0; height: 50px; }
+	'''
 	)
 
 run(host='localhost', port=3000)
