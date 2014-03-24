@@ -10,7 +10,12 @@ import locale
 import sys, os.path
 import ConfigParser
 
+## Read in config file from home directory
 config_path = os.path.join(os.environ["HOME"], '.CryptoDashTicker')
+if not os.path.isfile(config_path):
+	## Looks like the config files doesn't exist, tell the user and exit
+	print "Config file: '%s' Does not exist\nPlease see config.example for configuration instructions" % (config_path)
+	sys.exit()
 config = ConfigParser.RawConfigParser()
 config.read(config_path)
 
