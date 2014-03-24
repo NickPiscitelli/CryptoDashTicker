@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from bottle import route, run, template, static_file
 
 import urllib2
@@ -5,7 +7,17 @@ import simplejson
 import pprint 
 import re
 import locale
-import sys
+import sys, os.path
+import ConfigParser
+
+## Read in config file from home directory
+config_path = os.path.join(os.environ["HOME"], '.CryptoDashTicker')
+if not os.path.isfile(config_path):
+	## Looks like the config files doesn't exist, tell the user and exit
+	print "Config file: '%s' Does not exist\nPlease see config.example for configuration instructions" % (config_path)
+	sys.exit()
+config = ConfigParser.RawConfigParser()
+config.read(config_path)
 
 slideshow = None
 if len(sys.argv) > 2:
@@ -27,10 +39,11 @@ def markets(coins):
 	mintpal = simplejson.loads(json)
 	for m in mintpal:
 		m['name'] = m['code']
-		m['code'] = m['name']+'/'+m['exchange'];
+		m['code'] = m['name'] + '/' + m['exchange']
 		m['code'] = m['code'].upper()
 		market_data['MintPal'][m['code']] = m
-	req = urllib2.Request("http://api.swisscex.com/quotes?apiKey=129lutlsq7qviaq2stnlsag2d4", None)
+		
+	req = urllib2.Request("http://api.swisscex.com/quotes?apiKey=%s" % (config.get('api', 'swisscex_key')), None)
 	opener = urllib2.build_opener()
 	f = opener.open(req)
 	json = f.read()

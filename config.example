@@ -1,0 +1,6 @@
+## This is only an example file and should not be used as is
+## You can use this file as a base if you copy it to:
+##   ~/.CryptoDashTicker
+
+[api]
+swisscex_key = 123456789abcdefgh
