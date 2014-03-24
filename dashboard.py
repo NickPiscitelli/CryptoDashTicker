@@ -19,11 +19,8 @@ if not os.path.isfile(config_path):
 config = ConfigParser.RawConfigParser()
 config.read(config_path)
 
-slideshow = None
-if len(sys.argv) > 2:
-	slideshow = sys.argv[2]
-if sys.argv[1] == 'slideshow':
-	slideshow = 1
+slideshow = config.get('slideshow','slideshow')
+coin_tick = config.get('ticker','coin')
 
 @route('/<coins>')
 def markets(coins):
@@ -213,7 +210,7 @@ def markets(coins):
 			</div>
 			'''
 		)
-	tick = sys.argv[1].upper() if sys.argv[1] != 'slideshow' else 'DOGE'
+	tick = coin_tick if coin_tick else 'DOGE'
 	tick_color = 'green' if float(market_data['MintPal'][tick+'/BTC']['change']) > 0 else 'red'
 	invert = float(market_data['MintPal'][tick+'/BTC']['change'])
 	invert = invert * -1 if invert < 0 else invert
