@@ -7,7 +7,12 @@ import simplejson
 import pprint 
 import re
 import locale
-import sys
+import sys, os.path
+import ConfigParser
+
+config_path = os.path.join(os.environ["HOME"], '.CryptoDashTicker')
+config = ConfigParser.RawConfigParser()
+config.read(config_path)
 
 slideshow = None
 if len(sys.argv) > 2:
@@ -29,10 +34,11 @@ def markets(coins):
 	mintpal = simplejson.loads(json)
 	for m in mintpal:
 		m['name'] = m['code']
-		m['code'] = m['name']+'/'+m['exchange'];
+		m['code'] = m['name'] + '/' + m['exchange']
 		m['code'] = m['code'].upper()
 		market_data['MintPal'][m['code']] = m
-	req = urllib2.Request("http://api.swisscex.com/quotes?apiKey=129lutlsq7qviaq2stnlsag2d4", None)
+		
+	req = urllib2.Request("http://api.swisscex.com/quotes?apiKey=%s" % (config.get('api', 'swisscex_key')), None)
 	opener = urllib2.build_opener()
 	f = opener.open(req)
 	json = f.read()
